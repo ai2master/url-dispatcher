@@ -1,0 +1,26 @@
+[package]
+name = "url-dispatcher"
+version = "0.1.0"
+edition = "2021"
+description = "A configurable URL dispatcher that can be set as the default browser"
+license = "MIT"
+repository = "https://github.com/aidev666888/url-dispatcher"
+
+[dependencies]
+eframe = { version = "0.30", default-features = true }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+dirs = "6"
+arboard = "3"
+anyhow = "1.0"
+chrono = "0.4"
+uuid = { version = "1", features = ["v4", "serde"] }
+
+[target.'cfg(windows)'.dependencies]
+winreg = "0.55"
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+strip = true
