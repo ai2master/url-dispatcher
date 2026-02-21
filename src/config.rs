@@ -3,11 +3,19 @@ use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use uuid::Uuid;
 
+use crate::i18n::{self, Language};
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Config {
     pub version: u32,
     pub actions: Vec<Action>,
     pub append_file_path: Option<PathBuf>,
+    #[serde(default = "default_language")]
+    pub language: Language,
+}
+
+fn default_language() -> Language {
+    i18n::detect_system_language()
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -65,32 +73,34 @@ impl Action {
         }
     }
 
-    pub fn type_label(&self) -> &str {
+    pub fn type_label(&self, lang: Language) -> &str {
         match self {
-            Action::CopyToClipboard { .. } => "Copy to Clipboard",
-            Action::AppendToFile { .. } => "Append to File",
-            Action::OpenInBrowser { .. } => "Open in Browser",
+            Action::CopyToClipboard { .. } => crate::i18n::Tr::copy_to_clipboard(lang),
+            Action::AppendToFile { .. } => crate::i18n::Tr::append_to_file(lang),
+            Action::OpenInBrowser { .. } => crate::i18n::Tr::open_in_browser(lang),
         }
     }
 }
 
 impl Default for Config {
     fn default() -> Self {
+        let lang = i18n::detect_system_language();
         Self {
             version: 1,
             actions: vec![
                 Action::CopyToClipboard {
                     id: Uuid::new_v4(),
-                    name: "Copy to Clipboard".into(),
+                    name: i18n::Tr::copy_to_clipboard(lang).into(),
                     enabled: true,
                 },
                 Action::AppendToFile {
                     id: Uuid::new_v4(),
-                    name: "Append to File".into(),
+                    name: i18n::Tr::append_to_file(lang).into(),
                     enabled: true,
                 },
             ],
             append_file_path: None,
+            language: lang,
         }
     }
 }

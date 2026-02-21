@@ -3,6 +3,7 @@ use eframe::egui;
 use crate::actions;
 use crate::app::App;
 use crate::config::Action;
+use crate::i18n::Tr;
 
 impl App {
     pub fn render_dispatcher_ui(&mut self, ctx: &egui::Context) {
@@ -10,6 +11,7 @@ impl App {
             crate::app::AppMode::Dispatch(u) => u.clone(),
             _ => return,
         };
+        let lang = self.config.language;
 
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.vertical(|ui| {
@@ -17,7 +19,7 @@ impl App {
 
                 // URL display
                 ui.horizontal(|ui| {
-                    ui.label(egui::RichText::new("URL:").strong());
+                    ui.label(egui::RichText::new(Tr::url_label(lang)).strong());
                 });
                 ui.add_space(4.0);
 
@@ -97,11 +99,11 @@ impl App {
 
                 // Bottom row: Settings + Cancel
                 ui.horizontal(|ui| {
-                    if ui.button("Settings").clicked() {
+                    if ui.button(Tr::settings(lang)).clicked() {
                         self.mode = crate::app::AppMode::Settings;
                     }
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                        if ui.button("Cancel").clicked() {
+                        if ui.button(Tr::cancel(lang)).clicked() {
                             self.should_close = true;
                         }
                     });
@@ -127,15 +129,14 @@ impl App {
     }
 
     fn execute_action(&mut self, action: &Action, url: &str) {
+        let lang = self.config.language;
         let result = match action {
             Action::CopyToClipboard { .. } => actions::copy_to_clipboard(url),
             Action::AppendToFile { .. } => {
                 if let Some(path) = &self.config.append_file_path {
                     actions::append_to_file(url, path)
                 } else {
-                    Err(anyhow::anyhow!(
-                        "Append file path not configured. Please set it in Settings."
-                    ))
+                    Err(anyhow::anyhow!("{}", Tr::append_path_not_configured(lang)))
                 }
             }
             Action::OpenInBrowser {
@@ -150,7 +151,7 @@ impl App {
                 self.should_close = true;
             }
             Err(e) => {
-                self.status_message = Some(format!("Error: {}", e));
+                self.status_message = Some(Tr::error_prefix(lang, &e.to_string()));
                 self.status_is_error = true;
             }
         }

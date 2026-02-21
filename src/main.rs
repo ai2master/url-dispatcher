@@ -1,6 +1,7 @@
 mod actions;
 mod app;
 mod config;
+mod i18n;
 mod platform;
 mod ui_dispatch;
 mod ui_settings;

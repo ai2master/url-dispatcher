@@ -3,6 +3,7 @@ use uuid::Uuid;
 
 use crate::app::App;
 use crate::config::{self, Action, save_config};
+use crate::i18n::{Language, Tr};
 use crate::platform;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -10,6 +11,16 @@ pub enum ActionTypeChoice {
     CopyToClipboard,
     AppendToFile,
     OpenInBrowser,
+}
+
+impl ActionTypeChoice {
+    fn label(&self, lang: Language) -> &'static str {
+        match self {
+            ActionTypeChoice::CopyToClipboard => Tr::copy_to_clipboard(lang),
+            ActionTypeChoice::AppendToFile => Tr::append_to_file(lang),
+            ActionTypeChoice::OpenInBrowser => Tr::open_in_browser(lang),
+        }
+    }
 }
 
 pub struct ActionEditor {
@@ -137,14 +148,40 @@ fn shell_words_parse(s: &str) -> Vec<String> {
 
 impl App {
     pub fn render_settings_ui(&mut self, ctx: &egui::Context) {
+        let lang = self.config.language;
+
         egui::CentralPanel::default().show(ctx, |ui| {
-            ui.heading("URL Dispatcher Settings");
+            // Title row with language selector
+            ui.horizontal(|ui| {
+                ui.heading(Tr::settings_title(lang));
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                    let prev_lang = self.config.language;
+                    egui::ComboBox::from_id_salt("lang_combo")
+                        .selected_text(self.config.language.label())
+                        .show_ui(ui, |ui| {
+                            ui.selectable_value(
+                                &mut self.config.language,
+                                Language::English,
+                                Language::English.label(),
+                            );
+                            ui.selectable_value(
+                                &mut self.config.language,
+                                Language::Chinese,
+                                Language::Chinese.label(),
+                            );
+                        });
+                    ui.label(Tr::language_label(prev_lang));
+                });
+            });
             ui.add_space(8.0);
+
+            // Use the potentially updated language
+            let lang = self.config.language;
 
             // ── Actions list ─────────────────────────────────────────
             ui.group(|ui| {
                 ui.set_min_width(ui.available_width());
-                ui.label(egui::RichText::new("Actions").strong().size(16.0));
+                ui.label(egui::RichText::new(Tr::actions(lang)).strong().size(16.0));
                 ui.add_space(4.0);
 
                 let mut toggle_idx: Option<(usize, bool)> = None;
@@ -165,7 +202,7 @@ impl App {
                             egui::RichText::new(action.name()).size(14.0),
                         );
                         ui.label(
-                            egui::RichText::new(format!("({})", action.type_label()))
+                            egui::RichText::new(format!("({})", action.type_label(lang)))
                                 .weak()
                                 .size(12.0),
                         );
@@ -173,19 +210,19 @@ impl App {
                         ui.with_layout(
                             egui::Layout::right_to_left(egui::Align::Center),
                             |ui| {
-                                if ui.small_button("Delete").clicked() {
+                                if ui.small_button(Tr::delete(lang)).clicked() {
                                     delete_idx = Some(i);
                                 }
-                                if ui.small_button("Edit").clicked() {
+                                if ui.small_button(Tr::edit(lang)).clicked() {
                                     edit_action = Some(action.clone());
                                 }
                                 if i + 1 < action_count {
-                                    if ui.small_button("Down").clicked() {
+                                    if ui.small_button(Tr::down(lang)).clicked() {
                                         move_down_idx = Some(i);
                                     }
                                 }
                                 if i > 0 {
-                                    if ui.small_button("Up").clicked() {
+                                    if ui.small_button(Tr::up(lang)).clicked() {
                                         move_up_idx = Some(i);
                                     }
                                 }
@@ -213,7 +250,7 @@ impl App {
                 }
 
                 ui.add_space(4.0);
-                if ui.button("+ Add Action").clicked() {
+                if ui.button(Tr::add_action(lang)).clicked() {
                     self.action_editor.open_new();
                 }
             });
@@ -224,10 +261,10 @@ impl App {
             ui.group(|ui| {
                 ui.set_min_width(ui.available_width());
                 ui.label(
-                    egui::RichText::new("Append File Path").strong().size(16.0),
+                    egui::RichText::new(Tr::append_file_path(lang)).strong().size(16.0),
                 );
                 ui.add_space(4.0);
-                ui.label("URLs will be appended to this file when using 'Append to File' action:");
+                ui.label(Tr::append_file_description(lang));
 
                 let mut path_str = self
                     .config
@@ -255,45 +292,45 @@ impl App {
             ui.group(|ui| {
                 ui.set_min_width(ui.available_width());
                 ui.label(
-                    egui::RichText::new("System Integration")
+                    egui::RichText::new(Tr::system_integration(lang))
                         .strong()
                         .size(16.0),
                 );
                 ui.add_space(4.0);
 
                 ui.horizontal(|ui| {
-                    if ui.button("Register as Default Browser").clicked() {
+                    if ui.button(Tr::register_default_browser(lang)).clicked() {
                         match std::env::current_exe() {
                             Ok(exe) => match platform::register_as_default_browser(&exe) {
                                 Ok(_) => {
                                     self.status_message =
-                                        Some("Registered successfully!".into());
+                                        Some(Tr::registered_ok(lang).into());
                                     self.status_is_error = false;
                                 }
                                 Err(e) => {
                                     self.status_message =
-                                        Some(format!("Registration failed: {}", e));
+                                        Some(Tr::register_failed(lang, &e.to_string()));
                                     self.status_is_error = true;
                                 }
                             },
                             Err(e) => {
                                 self.status_message =
-                                    Some(format!("Cannot determine exe path: {}", e));
+                                    Some(Tr::exe_path_error(lang, &e.to_string()));
                                 self.status_is_error = true;
                             }
                         }
                     }
 
-                    if ui.button("Unregister").clicked() {
+                    if ui.button(Tr::unregister(lang)).clicked() {
                         match platform::unregister_as_default_browser() {
                             Ok(_) => {
                                 self.status_message =
-                                    Some("Unregistered successfully!".into());
+                                    Some(Tr::unregistered_ok(lang).into());
                                 self.status_is_error = false;
                             }
                             Err(e) => {
                                 self.status_message =
-                                    Some(format!("Unregistration failed: {}", e));
+                                    Some(Tr::unregister_failed(lang, &e.to_string()));
                                 self.status_is_error = true;
                             }
                         }
@@ -304,11 +341,7 @@ impl App {
                 {
                     ui.add_space(4.0);
                     ui.label(
-                        egui::RichText::new(
-                            "After registering, go to Windows Settings > Apps > \
-                             Default apps > Web browser and select URL Dispatcher.",
-                        )
-                        .weak(),
+                        egui::RichText::new(Tr::windows_hint(lang)).weak(),
                     );
                 }
             });
@@ -318,17 +351,17 @@ impl App {
             // ── Save / status ────────────────────────────────────────
             ui.horizontal(|ui| {
                 if ui
-                    .button(egui::RichText::new("Save Configuration").size(15.0))
+                    .button(egui::RichText::new(Tr::save_configuration(lang)).size(15.0))
                     .clicked()
                 {
                     match save_config(&self.config) {
                         Ok(_) => {
-                            self.status_message = Some("Configuration saved!".into());
+                            self.status_message = Some(Tr::config_saved(lang).into());
                             self.status_is_error = false;
                         }
                         Err(e) => {
                             self.status_message =
-                                Some(format!("Failed to save: {}", e));
+                                Some(Tr::save_failed(lang, &e.to_string()));
                             self.status_is_error = true;
                         }
                     }
@@ -362,11 +395,12 @@ impl App {
     }
 
     fn render_action_editor(&mut self, ctx: &egui::Context) {
+        let lang = self.config.language;
         let mut open = self.action_editor.active;
         egui::Window::new(if self.action_editor.editing_id.is_some() {
-            "Edit Action"
+            Tr::edit_action(lang)
         } else {
-            "Add Action"
+            Tr::add_action_title(lang)
         })
         .open(&mut open)
         .resizable(false)
@@ -374,52 +408,48 @@ impl App {
         .min_width(350.0)
         .show(ctx, |ui| {
             ui.horizontal(|ui| {
-                ui.label("Type:");
+                ui.label(Tr::type_label(lang));
                 egui::ComboBox::from_id_salt("action_type_combo")
-                    .selected_text(match self.action_editor.action_type {
-                        ActionTypeChoice::CopyToClipboard => "Copy to Clipboard",
-                        ActionTypeChoice::AppendToFile => "Append to File",
-                        ActionTypeChoice::OpenInBrowser => "Open in Browser",
-                    })
+                    .selected_text(self.action_editor.action_type.label(lang))
                     .show_ui(ui, |ui| {
                         ui.selectable_value(
                             &mut self.action_editor.action_type,
                             ActionTypeChoice::CopyToClipboard,
-                            "Copy to Clipboard",
+                            Tr::copy_to_clipboard(lang),
                         );
                         ui.selectable_value(
                             &mut self.action_editor.action_type,
                             ActionTypeChoice::AppendToFile,
-                            "Append to File",
+                            Tr::append_to_file(lang),
                         );
                         ui.selectable_value(
                             &mut self.action_editor.action_type,
                             ActionTypeChoice::OpenInBrowser,
-                            "Open in Browser",
+                            Tr::open_in_browser(lang),
                         );
                     });
             });
 
             ui.add_space(4.0);
             ui.horizontal(|ui| {
-                ui.label("Name:");
+                ui.label(Tr::name_label(lang));
                 ui.text_edit_singleline(&mut self.action_editor.name);
             });
 
             if self.action_editor.action_type == ActionTypeChoice::OpenInBrowser {
                 ui.add_space(4.0);
                 ui.horizontal(|ui| {
-                    ui.label("Executable:");
+                    ui.label(Tr::executable_label(lang));
                     ui.text_edit_singleline(&mut self.action_editor.executable_path);
                 });
 
                 ui.add_space(4.0);
                 ui.horizontal(|ui| {
-                    ui.label("Arguments:");
+                    ui.label(Tr::arguments_label(lang));
                     ui.text_edit_singleline(&mut self.action_editor.args_str);
                 });
                 ui.label(
-                    egui::RichText::new("Use {URL} as placeholder for the URL. Example: --incognito {URL}")
+                    egui::RichText::new(Tr::args_hint(lang))
                         .weak()
                         .size(11.0),
                 );
@@ -435,7 +465,7 @@ impl App {
                 let can_save = !name_empty && !exe_empty;
 
                 if ui
-                    .add_enabled(can_save, egui::Button::new("Save"))
+                    .add_enabled(can_save, egui::Button::new(Tr::save(lang)))
                     .clicked()
                 {
                     let new_action = self.action_editor.build_action();
@@ -455,7 +485,7 @@ impl App {
                     self.action_editor.active = false;
                 }
 
-                if ui.button("Cancel").clicked() {
+                if ui.button(Tr::cancel(lang)).clicked() {
                     self.action_editor.active = false;
                 }
             });
