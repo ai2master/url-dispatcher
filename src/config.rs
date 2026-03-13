@@ -1,3 +1,5 @@
+// 配置管理：数据结构定义、加载和保存 | Configuration: data structures, loading and saving
+
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
@@ -5,6 +7,7 @@ use uuid::Uuid;
 
 use crate::i18n::{self, Language};
 
+// 应用配置结构体 | Application configuration struct
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Config {
     pub version: u32,
@@ -18,6 +21,7 @@ fn default_language() -> Language {
     i18n::detect_system_language()
 }
 
+// 动作枚举：复制、追加到文件、在浏览器中打开 | Action enum: copy, append to file, open in browser
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type")]
 pub enum Action {
@@ -82,6 +86,7 @@ impl Action {
     }
 }
 
+// 默认配置：包含复制和追加两个内置动作 | Default config with copy and append built-in actions
 impl Default for Config {
     fn default() -> Self {
         let lang = i18n::detect_system_language();
@@ -105,6 +110,7 @@ impl Default for Config {
     }
 }
 
+// 获取平台相关的配置目录 | Get platform-specific config directory
 pub fn get_config_dir() -> Result<PathBuf> {
     let base = dirs::config_dir().context("Cannot determine config directory")?;
     let dir = if cfg!(windows) {
@@ -120,6 +126,7 @@ pub fn get_config_path() -> Result<PathBuf> {
     Ok(get_config_dir()?.join("config.json"))
 }
 
+// 加载配置，不存在则创建默认配置 | Load config, create default if not exists
 pub fn load_config() -> Result<Config> {
     let path = get_config_path()?;
     if !path.exists() {
@@ -133,6 +140,7 @@ pub fn load_config() -> Result<Config> {
     Ok(config)
 }
 
+// 保存配置到 JSON 文件 | Save config to JSON file
 pub fn save_config(config: &Config) -> Result<()> {
     let path = get_config_path()?;
     let json = serde_json::to_string_pretty(config)?;

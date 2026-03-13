@@ -1,3 +1,5 @@
+// 入口：解析命令行参数，决定分发模式或设置模式 | Entry: parse CLI args, choose dispatch or settings mode
+
 mod actions;
 mod app;
 mod config;

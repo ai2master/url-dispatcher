@@ -43,7 +43,7 @@ When a URL is dispatched:
 
 #### Download
 
-Pre-built binaries are available on the [Releases](https://github.com/aidev666888/url-dispatcher/releases) page:
+Pre-built binaries are available on the [Releases](https://github.com/ai2master/url-dispatcher/releases) page:
 
 - `url-dispatcher-linux-x86_64` — Linux (x86_64)
 - `url-dispatcher-windows-x86_64.exe` — Windows (x86_64)
@@ -161,7 +161,7 @@ The `{URL}` placeholder in `args` is replaced with the actual URL at dispatch ti
 
 #### 下载
 
-预编译的二进制文件可在 [Releases](https://github.com/aidev666888/url-dispatcher/releases) 页面下载：
+预编译的二进制文件可在 [Releases](https://github.com/ai2master/url-dispatcher/releases) 页面下载：
 
 - `url-dispatcher-linux-x86_64` — Linux (x86_64)
 - `url-dispatcher-windows-x86_64.exe` — Windows (x86_64)
