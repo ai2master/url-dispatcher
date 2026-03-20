@@ -1,5 +1,48 @@
+/*
+ * 国际化模块 | Internationalization Module
+ *
+ * 功能概述 | Overview:
+ * 本模块负责 URL Dispatcher 的多语言支持，包括语言检测和 UI 字符串翻译。
+ * 目前支持中文和英文两种语言。
+ *
+ * This module handles multilingual support for URL Dispatcher, including
+ * language detection and UI string translation. Currently supports Chinese
+ * and English.
+ *
+ * 设计说明 | Design Notes:
+ * - 使用静态方法而非外部 i18n crate，简化依赖，减小二进制体积
+ * - 所有翻译字符串集中在 Tr 结构体的静态方法中
+ * - 使用 Unicode 转义序列存储中文字符，避免源文件编码问题
+ * - 语言检测基于环境变量（LANG、LC_ALL 等）
+ *
+ * - Uses static methods instead of external i18n crate to simplify dependencies
+ *   and reduce binary size
+ * - All translation strings are centralized in static methods of Tr struct
+ * - Uses Unicode escape sequences for Chinese characters to avoid source file
+ *   encoding issues
+ * - Language detection based on environment variables (LANG, LC_ALL, etc.)
+ *
+ * 关键概念 | Key Concepts:
+ * - Language enum: 表示支持的语言类型
+ *                 Represents supported language types
+ * - detect_system_language: 根据系统环境自动检测语言
+ *                          Auto-detects language based on system environment
+ * - Tr struct: 提供所有 UI 字符串的翻译方法
+ *             Provides translation methods for all UI strings
+ */
+
 use serde::{Deserialize, Serialize};
 
+/// 语言枚举 | Language Enum
+///
+/// 定义 URL Dispatcher 支持的所有语言。
+/// Defines all languages supported by URL Dispatcher.
+///
+/// 变体说明 | Variants:
+/// - `English`: 英语
+///             English
+/// - `Chinese`: 简体中文
+///             Simplified Chinese
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Language {
     English,
@@ -7,55 +50,119 @@ pub enum Language {
 }
 
 impl Language {
+    /// 获取语言的显示标签 | Get display label for the language
+    ///
+    /// 返回值 | Return:
+    /// 语言的本地化名称，如"English"或"中文"。
+    /// Localized name of the language, such as "English" or "中文".
     pub fn label(self) -> &'static str {
         match self {
             Language::English => "English",
-            Language::Chinese => "\u{4e2d}\u{6587}",
+            Language::Chinese => "\u{4e2d}\u{6587}",  // "中文"
         }
     }
 }
 
-/// Detect system language. Returns Chinese if locale contains "zh", otherwise English.
+/// 检测系统语言 | Detect system language
+///
+/// 通过检查常用的语言环境变量来自动检测系统语言。
+/// 如果检测到中文环境，返回 Chinese；否则默认返回 English。
+///
+/// Automatically detects system language by checking common locale environment
+/// variables. Returns Chinese if Chinese environment detected; otherwise defaults
+/// to English.
+///
+/// 检测逻辑 | Detection Logic:
+/// 1. 按优先级检查环境变量：LANG、LC_ALL、LC_MESSAGES、LANGUAGE
+///    Check environment variables in priority order: LANG, LC_ALL, LC_MESSAGES, LANGUAGE
+/// 2. 如果变量值以 "zh" 开头或包含 "chinese"，判定为中文环境
+///    If variable value starts with "zh" or contains "chinese", determine as Chinese environment
+/// 3. 否则默认使用英文
+///    Otherwise default to English
+///
+/// 返回值 | Return:
+/// 检测到的语言类型。
+/// Detected language type.
+///
+/// 示例 | Examples:
+/// - LANG=zh_CN.UTF-8 -> Language::Chinese
+/// - LANG=en_US.UTF-8 -> Language::English
+/// - LANG=ja_JP.UTF-8 -> Language::English (默认 | default)
 pub fn detect_system_language() -> Language {
-    // Check common environment variables for locale
+    // 按优先级检查常用的 locale 环境变量
+    // Check common locale environment variables in priority order
     for var in &["LANG", "LC_ALL", "LC_MESSAGES", "LANGUAGE"] {
         if let Ok(val) = std::env::var(var) {
             let val_lower = val.to_lowercase();
+            // 检测中文 locale：zh_CN、zh_TW、zh_HK 等
+            // Detect Chinese locale: zh_CN, zh_TW, zh_HK, etc.
             if val_lower.starts_with("zh") || val_lower.contains("chinese") {
                 return Language::Chinese;
             }
         }
     }
+    // 默认使用英文 | Default to English
     Language::English
 }
 
-/// All translatable UI strings
+/// 翻译字符串结构体 | Translation Strings Structure
+///
+/// 集中管理所有 UI 字符串的翻译。每个方法返回指定语言的翻译字符串。
+/// 使用静态方法而非实例方法，无需实例化即可使用。
+///
+/// Centrally manages translations for all UI strings. Each method returns
+/// the translated string for the specified language. Uses static methods
+/// instead of instance methods, can be used without instantiation.
+///
+/// 用途 | Usage:
+/// ```rust
+/// let lang = Language::Chinese;
+/// let label = Tr::settings(lang);  // "设置"
+/// ```
 pub struct Tr;
 
 impl Tr {
-    // ── Dispatcher UI ────────────────────────────────────────
+    // ═══════════════════════════════════════════════════════════════════════════
+    // 分发界面字符串 | Dispatcher UI Strings
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /// URL 标签 | URL Label
+    /// 用途：在分发界面顶部显示 URL 提示
+    /// Usage: Display URL prompt at the top of dispatcher UI
     pub fn url_label(lang: Language) -> &'static str {
         match lang {
             Language::English => "URL:",
-            Language::Chinese => "URL\u{ff1a}",
+            Language::Chinese => "URL\u{ff1a}",  // "URL："
         }
     }
 
+    /// 设置按钮 | Settings Button
+    /// 用途：打开设置界面的按钮文本
+    /// Usage: Button text to open settings UI
     pub fn settings(lang: Language) -> &'static str {
         match lang {
             Language::English => "Settings",
-            Language::Chinese => "\u{8bbe}\u{7f6e}",
+            Language::Chinese => "\u{8bbe}\u{7f6e}",  // "设置"
         }
     }
 
+    /// 取消按钮 | Cancel Button
+    /// 用途：关闭分发界面的按钮文本
+    /// Usage: Button text to close dispatcher UI
     pub fn cancel(lang: Language) -> &'static str {
         match lang {
             Language::English => "Cancel",
-            Language::Chinese => "\u{53d6}\u{6d88}",
+            Language::Chinese => "\u{53d6}\u{6d88}",  // "取消"
         }
     }
 
-    // ── Settings UI ──────────────────────────────────────────
+    // ═══════════════════════════════════════════════════════════════════════════
+    // 设置界面字符串 | Settings UI Strings
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /// 设置界面标题 | Settings UI Title
+    /// 用途：设置窗口的顶部标题
+    /// Usage: Top title of settings window
     pub fn settings_title(lang: Language) -> &'static str {
         match lang {
             Language::English => "URL Dispatcher Settings",
@@ -63,45 +170,63 @@ impl Tr {
         }
     }
 
+    /// 动作列表标题 | Actions List Title
+    /// 用途：动作列表区域的标题
+    /// Usage: Title of actions list section
     pub fn actions(lang: Language) -> &'static str {
         match lang {
             Language::English => "Actions",
-            Language::Chinese => "\u{52a8}\u{4f5c}\u{5217}\u{8868}",
+            Language::Chinese => "\u{52a8}\u{4f5c}\u{5217}\u{8868}",  // "动作列表"
         }
     }
 
+    /// 删除按钮 | Delete Button
+    /// 用途：删除动作的按钮文本
+    /// Usage: Button text to delete an action
     pub fn delete(lang: Language) -> &'static str {
         match lang {
             Language::English => "Delete",
-            Language::Chinese => "\u{5220}\u{9664}",
+            Language::Chinese => "\u{5220}\u{9664}",  // "删除"
         }
     }
 
+    /// 编辑按钮 | Edit Button
+    /// 用途：编辑动作的按钮文本
+    /// Usage: Button text to edit an action
     pub fn edit(lang: Language) -> &'static str {
         match lang {
             Language::English => "Edit",
-            Language::Chinese => "\u{7f16}\u{8f91}",
+            Language::Chinese => "\u{7f16}\u{8f91}",  // "编辑"
         }
     }
 
+    /// 上移按钮 | Move Up Button
+    /// 用途：将动作在列表中上移的按钮文本
+    /// Usage: Button text to move action up in list
     pub fn up(lang: Language) -> &'static str {
         match lang {
             Language::English => "Up",
-            Language::Chinese => "\u{4e0a}\u{79fb}",
+            Language::Chinese => "\u{4e0a}\u{79fb}",  // "上移"
         }
     }
 
+    /// 下移按钮 | Move Down Button
+    /// 用途：将动作在列表中下移的按钮文本
+    /// Usage: Button text to move action down in list
     pub fn down(lang: Language) -> &'static str {
         match lang {
             Language::English => "Down",
-            Language::Chinese => "\u{4e0b}\u{79fb}",
+            Language::Chinese => "\u{4e0b}\u{79fb}",  // "下移"
         }
     }
 
+    /// 添加动作按钮 | Add Action Button
+    /// 用途：打开动作编辑器添加新动作的按钮文本
+    /// Usage: Button text to open action editor to add new action
     pub fn add_action(lang: Language) -> &'static str {
         match lang {
             Language::English => "+ Add Action",
-            Language::Chinese => "+ \u{6dfb}\u{52a0}\u{52a8}\u{4f5c}",
+            Language::Chinese => "+ \u{6dfb}\u{52a0}\u{52a8}\u{4f5c}",  // "+ 添加动作"
         }
     }
 
@@ -204,7 +329,13 @@ impl Tr {
         }
     }
 
-    // ── Action editor ────────────────────────────────────────
+    // ═══════════════════════════════════════════════════════════════════════════
+    // 动作编辑器字符串 | Action Editor Strings
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /// 编辑动作窗口标题 | Edit Action Window Title
+    /// 用途：编辑已存在动作时的窗口标题
+    /// Usage: Window title when editing an existing action
     pub fn edit_action(lang: Language) -> &'static str {
         match lang {
             Language::English => "Edit Action",
@@ -261,7 +392,13 @@ impl Tr {
         }
     }
 
-    // ── Action type labels ───────────────────────────────────
+    // ═══════════════════════════════════════════════════════════════════════════
+    // 动作类型标签 | Action Type Labels
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /// 复制到剪贴板动作标签 | Copy to Clipboard Action Label
+    /// 用途：在动作列表和编辑器中显示的动作类型名称
+    /// Usage: Action type name displayed in action list and editor
     pub fn copy_to_clipboard(lang: Language) -> &'static str {
         match lang {
             Language::English => "Copy to Clipboard",
@@ -283,7 +420,13 @@ impl Tr {
         }
     }
 
-    // ── Error messages ───────────────────────────────────────
+    // ═══════════════════════════════════════════════════════════════════════════
+    // 错误消息 | Error Messages
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /// 追加文件路径未配置错误 | Append File Path Not Configured Error
+    /// 用途：执行追加到文件动作时，如果路径未配置，显示此错误
+    /// Usage: Display this error when executing append to file action if path not configured
     pub fn append_path_not_configured(lang: Language) -> &'static str {
         match lang {
             Language::English => "Append file path not configured. Please set it in Settings.",
@@ -298,7 +441,13 @@ impl Tr {
         }
     }
 
-    // ── Language selector ────────────────────────────────────
+    // ═══════════════════════════════════════════════════════════════════════════
+    // 语言选择器 | Language Selector
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /// 语言标签 | Language Label
+    /// 用途：语言下拉框的标签文本
+    /// Usage: Label text for language dropdown
     pub fn language_label(lang: Language) -> &'static str {
         match lang {
             Language::English => "Language",
