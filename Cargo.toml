@@ -19,6 +19,14 @@ uuid = { version = "1", features = ["v4", "serde"] }
 [target.'cfg(windows)'.dependencies]
 winreg = "0.55"
 
+[dev-dependencies]
+tempfile = "3"
+
+[lints.clippy]
+# 双语文档注释使用对齐缩进，此 lint 不适用
+# Bilingual doc comments use aligned indentation
+doc_overindented_list_items = "allow"
+
 [profile.release]
 opt-level = "z"
 lto = true

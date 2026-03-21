@@ -96,8 +96,7 @@ StartupNotify=true
 
     // 写入 .desktop 文件 | Write .desktop file
     let desktop_file = apps_dir.join("url-dispatcher.desktop");
-    std::fs::write(&desktop_file, desktop_content)
-        .context("Failed to write .desktop file")?;
+    std::fs::write(&desktop_file, desktop_content).context("Failed to write .desktop file")?;
 
     // 使用 xdg-mime 注册为 http 和 https 的默认处理程序
     // Use xdg-mime to register as default handler for http and https
@@ -106,7 +105,11 @@ StartupNotify=true
         .status();
 
     let status_https = std::process::Command::new("xdg-mime")
-        .args(["default", "url-dispatcher.desktop", "x-scheme-handler/https"])
+        .args([
+            "default",
+            "url-dispatcher.desktop",
+            "x-scheme-handler/https",
+        ])
         .status();
 
     // 检查 xdg-mime 命令是否执行成功
@@ -229,7 +232,7 @@ pub fn register_as_default_browser(exe_path: &Path) -> Result<()> {
     // ─── 步骤 1: 创建 URL 协议处理类 | Step 1: Create URL protocol handler class ───
     let (class_key, _) = hkcu.create_subkey("Software\\Classes\\URLDispatcherURL")?;
     class_key.set_value("", &"URL Dispatcher")?;
-    class_key.set_value("URL Protocol", &"")?;  // 空值表示这是 URL 协议 | Empty value indicates this is URL protocol
+    class_key.set_value("URL Protocol", &"")?; // 空值表示这是 URL 协议 | Empty value indicates this is URL protocol
 
     // 设置协议处理命令，%1 会被 Windows 替换为实际 URL
     // Set protocol handler command, %1 will be replaced by Windows with actual URL
@@ -244,8 +247,7 @@ pub fn register_as_default_browser(exe_path: &Path) -> Result<()> {
 
     // 设置客户端启动命令
     // Set client launch command
-    let (client_cmd, _) =
-        client_key.create_subkey("shell\\open\\command")?;
+    let (client_cmd, _) = client_key.create_subkey("shell\\open\\command")?;
     client_cmd.set_value("", &format!("\"{}\"", exe_str))?;
 
     // ─── 步骤 3-4: 声明应用能力和 URL 关联 | Steps 3-4: Declare app capabilities and URL associations ───
@@ -262,8 +264,7 @@ pub fn register_as_default_browser(exe_path: &Path) -> Result<()> {
     urlassoc.set_value("https", &"URLDispatcherURL")?;
 
     // ─── 步骤 5: 添加到已注册应用列表 | Step 5: Add to RegisteredApplications ───
-    let (regapps, _) =
-        hkcu.create_subkey("Software\\RegisteredApplications")?;
+    let (regapps, _) = hkcu.create_subkey("Software\\RegisteredApplications")?;
     regapps.set_value(
         "URLDispatcher",
         &"Software\\Clients\\StartMenuInternet\\URLDispatcher\\Capabilities",
@@ -305,8 +306,7 @@ pub fn unregister_as_default_browser() -> Result<()> {
 
     // 从已注册应用中移除（忽略错误，可能不存在）
     // Remove from registered applications (ignore errors, may not exist)
-    if let Ok(regapps) =
-        hkcu.open_subkey_with_flags("Software\\RegisteredApplications", KEY_WRITE)
+    if let Ok(regapps) = hkcu.open_subkey_with_flags("Software\\RegisteredApplications", KEY_WRITE)
     {
         let _ = regapps.delete_value("URLDispatcher");
     }
@@ -324,7 +324,9 @@ pub fn unregister_as_default_browser() -> Result<()> {
 /// For platforms not yet supported, returns friendly error message.
 #[cfg(not(any(windows, target_os = "linux")))]
 pub fn register_as_default_browser(_exe_path: &Path) -> Result<()> {
-    Err(anyhow!("Default browser registration is not supported on this platform"))
+    Err(anyhow!(
+        "Default browser registration is not supported on this platform"
+    ))
 }
 
 /// 其他平台（macOS 等）：取消注册功能占位符 | Other platforms (macOS etc.): Unregistration placeholder
@@ -333,5 +335,7 @@ pub fn register_as_default_browser(_exe_path: &Path) -> Result<()> {
 /// For platforms not yet supported, returns friendly error message.
 #[cfg(not(any(windows, target_os = "linux")))]
 pub fn unregister_as_default_browser() -> Result<()> {
-    Err(anyhow!("Default browser unregistration is not supported on this platform"))
+    Err(anyhow!(
+        "Default browser unregistration is not supported on this platform"
+    ))
 }

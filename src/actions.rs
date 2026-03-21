@@ -111,8 +111,8 @@ pub fn append_to_file(url: &str, file_path: &Path) -> Result<()> {
     // 以追加模式打开文件，不存在则创建
     // Open file in append mode, create if not exists
     let mut file = OpenOptions::new()
-        .create(true)  // 文件不存在时创建 | Create if doesn't exist
-        .append(true)  // 追加模式，不覆盖现有内容 | Append mode, don't overwrite
+        .create(true) // 文件不存在时创建 | Create if doesn't exist
+        .append(true) // 追加模式，不覆盖现有内容 | Append mode, don't overwrite
         .open(file_path)?;
 
     // 生成本地时间戳，格式：YYYY-MM-DD HH:MM:SS

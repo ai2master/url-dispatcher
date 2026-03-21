@@ -58,7 +58,7 @@ impl Language {
     pub fn label(self) -> &'static str {
         match self {
             Language::English => "English",
-            Language::Chinese => "\u{4e2d}\u{6587}",  // "中文"
+            Language::Chinese => "\u{4e2d}\u{6587}", // "中文"
         }
     }
 }
@@ -116,6 +116,7 @@ pub fn detect_system_language() -> Language {
 ///
 /// 用途 | Usage:
 /// ```rust
+/// use url_dispatcher::i18n::{Language, Tr};
 /// let lang = Language::Chinese;
 /// let label = Tr::settings(lang);  // "设置"
 /// ```
@@ -132,7 +133,7 @@ impl Tr {
     pub fn url_label(lang: Language) -> &'static str {
         match lang {
             Language::English => "URL:",
-            Language::Chinese => "URL\u{ff1a}",  // "URL："
+            Language::Chinese => "URL\u{ff1a}", // "URL："
         }
     }
 
@@ -142,7 +143,7 @@ impl Tr {
     pub fn settings(lang: Language) -> &'static str {
         match lang {
             Language::English => "Settings",
-            Language::Chinese => "\u{8bbe}\u{7f6e}",  // "设置"
+            Language::Chinese => "\u{8bbe}\u{7f6e}", // "设置"
         }
     }
 
@@ -152,7 +153,7 @@ impl Tr {
     pub fn cancel(lang: Language) -> &'static str {
         match lang {
             Language::English => "Cancel",
-            Language::Chinese => "\u{53d6}\u{6d88}",  // "取消"
+            Language::Chinese => "\u{53d6}\u{6d88}", // "取消"
         }
     }
 
@@ -176,7 +177,7 @@ impl Tr {
     pub fn actions(lang: Language) -> &'static str {
         match lang {
             Language::English => "Actions",
-            Language::Chinese => "\u{52a8}\u{4f5c}\u{5217}\u{8868}",  // "动作列表"
+            Language::Chinese => "\u{52a8}\u{4f5c}\u{5217}\u{8868}", // "动作列表"
         }
     }
 
@@ -186,7 +187,7 @@ impl Tr {
     pub fn delete(lang: Language) -> &'static str {
         match lang {
             Language::English => "Delete",
-            Language::Chinese => "\u{5220}\u{9664}",  // "删除"
+            Language::Chinese => "\u{5220}\u{9664}", // "删除"
         }
     }
 
@@ -196,7 +197,7 @@ impl Tr {
     pub fn edit(lang: Language) -> &'static str {
         match lang {
             Language::English => "Edit",
-            Language::Chinese => "\u{7f16}\u{8f91}",  // "编辑"
+            Language::Chinese => "\u{7f16}\u{8f91}", // "编辑"
         }
     }
 
@@ -206,7 +207,7 @@ impl Tr {
     pub fn up(lang: Language) -> &'static str {
         match lang {
             Language::English => "Up",
-            Language::Chinese => "\u{4e0a}\u{79fb}",  // "上移"
+            Language::Chinese => "\u{4e0a}\u{79fb}", // "上移"
         }
     }
 
@@ -216,7 +217,7 @@ impl Tr {
     pub fn down(lang: Language) -> &'static str {
         match lang {
             Language::English => "Down",
-            Language::Chinese => "\u{4e0b}\u{79fb}",  // "下移"
+            Language::Chinese => "\u{4e0b}\u{79fb}", // "下移"
         }
     }
 
@@ -226,7 +227,7 @@ impl Tr {
     pub fn add_action(lang: Language) -> &'static str {
         match lang {
             Language::English => "+ Add Action",
-            Language::Chinese => "+ \u{6dfb}\u{52a0}\u{52a8}\u{4f5c}",  // "+ 添加动作"
+            Language::Chinese => "+ \u{6dfb}\u{52a0}\u{52a8}\u{4f5c}", // "+ 添加动作"
         }
     }
 
@@ -318,14 +319,20 @@ impl Tr {
     pub fn unregister_failed(lang: Language, err: &str) -> String {
         match lang {
             Language::English => format!("Unregistration failed: {}", err),
-            Language::Chinese => format!("\u{53d6}\u{6d88}\u{6ce8}\u{518c}\u{5931}\u{8d25}\u{ff1a}{}", err),
+            Language::Chinese => format!(
+                "\u{53d6}\u{6d88}\u{6ce8}\u{518c}\u{5931}\u{8d25}\u{ff1a}{}",
+                err
+            ),
         }
     }
 
     pub fn exe_path_error(lang: Language, err: &str) -> String {
         match lang {
             Language::English => format!("Cannot determine exe path: {}", err),
-            Language::Chinese => format!("\u{65e0}\u{6cd5}\u{786e}\u{5b9a}\u{7a0b}\u{5e8f}\u{8def}\u{5f84}\u{ff1a}{}", err),
+            Language::Chinese => format!(
+                "\u{65e0}\u{6cd5}\u{786e}\u{5b9a}\u{7a0b}\u{5e8f}\u{8def}\u{5f84}\u{ff1a}{}",
+                err
+            ),
         }
     }
 

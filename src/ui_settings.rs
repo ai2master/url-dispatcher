@@ -46,7 +46,7 @@ use eframe::egui;
 use uuid::Uuid;
 
 use crate::app::App;
-use crate::config::{self, Action, save_config};
+use crate::config::{self, save_config, Action};
 use crate::i18n::{Language, Tr};
 use crate::platform;
 
@@ -118,7 +118,7 @@ impl Default for ActionEditor {
             action_type: ActionTypeChoice::OpenInBrowser,
             name: String::new(),
             executable_path: String::new(),
-            args_str: "{URL}".into(),  // 默认参数模板 | Default argument template
+            args_str: "{URL}".into(), // 默认参数模板 | Default argument template
         }
     }
 }
@@ -206,7 +206,7 @@ impl ActionEditor {
             ActionTypeChoice::OpenInBrowser => {
                 // 解析参数字符串为数组 | Parse argument string into array
                 let args: Vec<String> = if self.args_str.trim().is_empty() {
-                    vec!["{URL}".into()]  // 空参数时使用默认 | Use default when empty
+                    vec!["{URL}".into()] // 空参数时使用默认 | Use default when empty
                 } else {
                     shell_words_parse(&self.args_str)
                 };
@@ -374,36 +374,27 @@ impl App {
                             toggle_idx = Some((i, enabled));
                         }
 
-                        ui.label(
-                            egui::RichText::new(action.name()).size(14.0),
-                        );
+                        ui.label(egui::RichText::new(action.name()).size(14.0));
                         ui.label(
                             egui::RichText::new(format!("({})", action.type_label(lang)))
                                 .weak()
                                 .size(12.0),
                         );
 
-                        ui.with_layout(
-                            egui::Layout::right_to_left(egui::Align::Center),
-                            |ui| {
-                                if ui.small_button(Tr::delete(lang)).clicked() {
-                                    delete_idx = Some(i);
-                                }
-                                if ui.small_button(Tr::edit(lang)).clicked() {
-                                    edit_action = Some(action.clone());
-                                }
-                                if i + 1 < action_count {
-                                    if ui.small_button(Tr::down(lang)).clicked() {
-                                        move_down_idx = Some(i);
-                                    }
-                                }
-                                if i > 0 {
-                                    if ui.small_button(Tr::up(lang)).clicked() {
-                                        move_up_idx = Some(i);
-                                    }
-                                }
-                            },
-                        );
+                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                            if ui.small_button(Tr::delete(lang)).clicked() {
+                                delete_idx = Some(i);
+                            }
+                            if ui.small_button(Tr::edit(lang)).clicked() {
+                                edit_action = Some(action.clone());
+                            }
+                            if i + 1 < action_count && ui.small_button(Tr::down(lang)).clicked() {
+                                move_down_idx = Some(i);
+                            }
+                            if i > 0 && ui.small_button(Tr::up(lang)).clicked() {
+                                move_up_idx = Some(i);
+                            }
+                        });
                     });
                     ui.separator();
                 }
@@ -442,7 +433,9 @@ impl App {
             ui.group(|ui| {
                 ui.set_min_width(ui.available_width());
                 ui.label(
-                    egui::RichText::new(Tr::append_file_path(lang)).strong().size(16.0),
+                    egui::RichText::new(Tr::append_file_path(lang))
+                        .strong()
+                        .size(16.0),
                 );
                 ui.add_space(4.0);
                 ui.label(Tr::append_file_description(lang));
@@ -454,15 +447,11 @@ impl App {
                     .map(|p| p.display().to_string())
                     .unwrap_or_default();
 
-                if ui
-                    .text_edit_singleline(&mut path_str)
-                    .changed()
-                {
+                if ui.text_edit_singleline(&mut path_str).changed() {
                     if path_str.is_empty() {
                         self.config.append_file_path = None;
                     } else {
-                        self.config.append_file_path =
-                            Some(std::path::PathBuf::from(&path_str));
+                        self.config.append_file_path = Some(std::path::PathBuf::from(&path_str));
                     }
                 }
             });
@@ -486,8 +475,7 @@ impl App {
                         match std::env::current_exe() {
                             Ok(exe) => match platform::register_as_default_browser(&exe) {
                                 Ok(_) => {
-                                    self.status_message =
-                                        Some(Tr::registered_ok(lang).into());
+                                    self.status_message = Some(Tr::registered_ok(lang).into());
                                     self.status_is_error = false;
                                 }
                                 Err(e) => {
@@ -507,8 +495,7 @@ impl App {
                     if ui.button(Tr::unregister(lang)).clicked() {
                         match platform::unregister_as_default_browser() {
                             Ok(_) => {
-                                self.status_message =
-                                    Some(Tr::unregistered_ok(lang).into());
+                                self.status_message = Some(Tr::unregistered_ok(lang).into());
                                 self.status_is_error = false;
                             }
                             Err(e) => {
@@ -523,9 +510,7 @@ impl App {
                 #[cfg(windows)]
                 {
                     ui.add_space(4.0);
-                    ui.label(
-                        egui::RichText::new(Tr::windows_hint(lang)).weak(),
-                    );
+                    ui.label(egui::RichText::new(Tr::windows_hint(lang)).weak());
                 }
             });
 
@@ -545,8 +530,7 @@ impl App {
                             self.status_is_error = false;
                         }
                         Err(e) => {
-                            self.status_message =
-                                Some(Tr::save_failed(lang, &e.to_string()));
+                            self.status_message = Some(Tr::save_failed(lang, &e.to_string()));
                             self.status_is_error = true;
                         }
                     }
@@ -667,11 +651,7 @@ impl App {
                     ui.text_edit_singleline(&mut self.action_editor.args_str);
                 });
                 // 参数提示 | Arguments hint
-                ui.label(
-                    egui::RichText::new(Tr::args_hint(lang))
-                        .weak()
-                        .size(11.0),
-                );
+                ui.label(egui::RichText::new(Tr::args_hint(lang)).weak().size(11.0));
             }
 
             ui.add_space(8.0);
@@ -680,8 +660,7 @@ impl App {
             ui.horizontal(|ui| {
                 // 验证必填字段 | Validate required fields
                 let name_empty = self.action_editor.name.trim().is_empty();
-                let exe_empty = self.action_editor.action_type
-                    == ActionTypeChoice::OpenInBrowser
+                let exe_empty = self.action_editor.action_type == ActionTypeChoice::OpenInBrowser
                     && self.action_editor.executable_path.trim().is_empty();
 
                 let can_save = !name_empty && !exe_empty;

@@ -91,8 +91,8 @@ fn main() -> eframe::Result {
             };
             (
                 format!("URL Dispatcher - {}", display_url),
-                420.0,  // 弹窗宽度 | Popup width
-                350.0,  // 弹窗高度 | Popup height
+                420.0, // 弹窗宽度 | Popup width
+                350.0, // 弹窗高度 | Popup height
                 true,
             )
         }

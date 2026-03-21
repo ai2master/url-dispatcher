@@ -106,7 +106,7 @@ impl App {
                         };
                         ui.label(
                             egui::RichText::new(&url_text)
-                                .monospace()  // 等宽字体便于阅读 URL | Monospace font for URL readability
+                                .monospace() // 等宽字体便于阅读 URL | Monospace font for URL readability
                                 .size(13.0),
                         );
                     });
@@ -138,10 +138,8 @@ impl App {
                     let shortcut_num = display_idx + 1;
                     let label = format!("[{}] {}", shortcut_num, action.name());
 
-                    let button = egui::Button::new(
-                        egui::RichText::new(&label).size(15.0),
-                    )
-                    .min_size(egui::vec2(ui.available_width(), 32.0));
+                    let button = egui::Button::new(egui::RichText::new(&label).size(15.0))
+                        .min_size(egui::vec2(ui.available_width(), 32.0));
 
                     // 检测鼠标点击 | Detect mouse click
                     if ui.add(button).clicked() {
