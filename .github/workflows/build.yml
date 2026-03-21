@@ -157,6 +157,11 @@ jobs:
       - name: Build release binary
         run: cargo build --release
 
+      # 清理缓存中可能残留的旧打包产物
+      # Clean old packaging artifacts that may linger in cache
+      - name: Clean old packaging artifacts
+        run: rm -rf target/debian target/generate-rpm
+
       # ── 裸二进制 | Raw binary ──
       - name: Prepare raw binary
         run: cp target/release/url-dispatcher url-dispatcher-linux-x86_64
