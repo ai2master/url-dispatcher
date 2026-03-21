@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4A90D9;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#357ABD;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="48" fill="url(#bg)"/>
+  <g transform="translate(128,120)" fill="none" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round">
+    <!-- Globe circle / 地球圆 -->
+    <circle cx="0" cy="0" r="50"/>
+    <ellipse cx="0" cy="0" rx="22" ry="50"/>
+    <line x1="-48" y1="-18" x2="48" y2="-18"/>
+    <line x1="-50" y1="0" x2="50" y2="0"/>
+    <line x1="-48" y1="18" x2="48" y2="18"/>
+    <!-- Arrow pointing right-down / 向右下箭头 -->
+    <line x1="30" y1="30" x2="65" y2="65" stroke-width="10"/>
+    <polyline points="45,65 65,65 65,45" stroke-width="10" fill="none"/>
+  </g>
+  <!-- Dispatch dots / 分发点 -->
+  <circle cx="195" cy="195" r="8" fill="#FFFFFF"/>
+  <circle cx="215" cy="170" r="6" fill="#FFFFFF" opacity="0.7"/>
+  <circle cx="180" cy="215" r="6" fill="#FFFFFF" opacity="0.7"/>
+</svg>
