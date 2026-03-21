@@ -178,16 +178,17 @@ jobs:
       # ── AppImage ──
       - name: Build AppImage
         run: |
-          # 下载 linuxdeploy | Download linuxdeploy
-          wget -q "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage"
-          chmod +x linuxdeploy-x86_64.AppImage
+          # 下载 linuxdeploy 到临时目录 | Download linuxdeploy to temp dir
+          mkdir -p /tmp/tools
+          wget -q -O /tmp/tools/linuxdeploy "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage"
+          chmod +x /tmp/tools/linuxdeploy
 
           VERSION="${GITHUB_REF_NAME#v}"
 
           # linuxdeploy 会自动创建 AppDir 结构
           # linuxdeploy will automatically create the AppDir structure
-          LDAI_OUTPUT="url-dispatcher-${VERSION}-x86_64.AppImage" \
-          ./linuxdeploy-x86_64.AppImage \
+          OUTPUT="url-dispatcher-${VERSION}-x86_64.AppImage" \
+          /tmp/tools/linuxdeploy \
             --appdir AppDir \
             --executable target/release/url-dispatcher \
             --desktop-file assets/url-dispatcher.desktop \
@@ -201,7 +202,7 @@ jobs:
           cp url-dispatcher-linux-x86_64 dist/
           cp target/debian/*.deb dist/
           cp target/generate-rpm/*.rpm dist/
-          cp *.AppImage dist/
+          cp url-dispatcher-*.AppImage dist/
           echo "=== Release artifacts ==="
           ls -lh dist/
 

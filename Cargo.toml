@@ -1,6 +1,6 @@
 [package]
 name = "url-dispatcher"
-version = "0.1.1"
+version = "0.2.0"
 edition = "2021"
 description = "A configurable URL dispatcher that can be set as the default browser"
 license = "MIT"
