@@ -30,7 +30,9 @@
  * - User still needs to manually select in system settings after registration (especially Windows)
  */
 
-use anyhow::{anyhow, Context, Result};
+use anyhow::{anyhow, Result};
+#[cfg(target_os = "linux")]
+use anyhow::Context;
 use std::path::Path;
 
 // ═══════════════════════════════════════════════════════════════════════════
