@@ -121,6 +121,38 @@ fn main() -> eframe::Result {
     eframe::run_native(
         &title,
         options,
-        Box::new(move |_cc| Ok(Box::new(App::new(mode, cfg)))),
+        Box::new(move |cc| {
+            // ── 加载中文字体 | Load Chinese font ──────────────────────────
+            // egui 默认字体不包含 CJK 字符，需要加载 Noto Serif SC 字体
+            // 以支持中文界面和用户输入的中文内容。
+            //
+            // egui's default font lacks CJK characters. Load Noto Serif SC
+            // to support Chinese UI labels and user-entered Chinese text.
+            let mut fonts = eframe::egui::FontDefinitions::default();
+            fonts.font_data.insert(
+                "noto_serif_sc".to_owned(),
+                eframe::egui::FontData::from_static(include_bytes!(
+                    "../assets/NotoSerifSC-Regular.otf"
+                ))
+                .into(),
+            );
+            // 将中文字体插入到 Proportional 字体族的最高优先级
+            // Insert Chinese font at highest priority in Proportional family
+            fonts
+                .families
+                .get_mut(&eframe::egui::FontFamily::Proportional)
+                .unwrap()
+                .insert(0, "noto_serif_sc".to_owned());
+            // 也添加到 Monospace 字体族作为回退（用于 URL 显示等）
+            // Also add to Monospace family as fallback (for URL display etc.)
+            fonts
+                .families
+                .get_mut(&eframe::egui::FontFamily::Monospace)
+                .unwrap()
+                .push("noto_serif_sc".to_owned());
+            cc.egui_ctx.set_fonts(fonts);
+
+            Ok(Box::new(App::new(mode, cfg)))
+        }),
     )
 }
